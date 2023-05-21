@@ -30,6 +30,10 @@ func NewConn(netConn net.Conn) Conn {
 	}
 }
 
+func (conn Conn) RemoteAddr() net.Addr {
+	return conn.netConn.RemoteAddr()
+}
+
 func (conn Conn) LocalPort() uint16 {
 	return uint16(conn.netConn.LocalAddr().(*net.TCPAddr).Port)
 }

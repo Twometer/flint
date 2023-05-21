@@ -12,18 +12,18 @@ type Watcher struct {
 	path            string
 	fsWatcher       *fsnotify.Watcher
 	CurrentConfig   Config
-	OnConfigChanged func()
+	OnConfigChanged func(newConfig Config)
 }
 
-func WatchConfig(path string) (Watcher, error) {
+func WatchConfig(path string) (*Watcher, error) {
 	fsWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return Watcher{}, err
+		return &Watcher{}, err
 	}
 
 	err = fsWatcher.Add(path)
 	if err != nil {
-		return Watcher{}, err
+		return &Watcher{}, err
 	}
 
 	watcher := Watcher{
@@ -32,11 +32,11 @@ func WatchConfig(path string) (Watcher, error) {
 	}
 	err = watcher.reloadConfig()
 	if err != nil {
-		return Watcher{}, err
+		return &Watcher{}, err
 	}
 
 	go watcher.processEvents()
-	return watcher, err
+	return &watcher, err
 }
 
 func (watcher *Watcher) processEvents() {
@@ -79,7 +79,7 @@ func (watcher *Watcher) handleConfigChanged() {
 	}
 
 	if watcher.OnConfigChanged != nil {
-		watcher.OnConfigChanged()
+		watcher.OnConfigChanged(watcher.CurrentConfig)
 	}
 	log.Println("Applying changed configuration")
 }
