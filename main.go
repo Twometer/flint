@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flint/config"
 	"flint/mc"
 	"fmt"
 	"log"
@@ -94,12 +95,20 @@ func handleConnection(conn mc.Conn) {
 }
 
 func main() {
-	server, err := net.Listen("tcp", ":25565")
+	configWatcher, err := config.WatchConfig("./config.toml")
+	defer configWatcher.Close()
+	if err != nil {
+		log.Fatalln("failed to load config:", err)
+	}
+
+	conf := configWatcher.CurrentConfig
+	address := fmt.Sprintf("%s:%d", conf.Ip, conf.Port)
+	server, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalln("failed to start server:", err)
 	}
 
-	log.Println("Server running on :25565")
+	log.Printf("Server running at %s\n", address)
 	for {
 		conn, err := server.Accept()
 		if err != nil {
