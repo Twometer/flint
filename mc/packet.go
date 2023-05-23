@@ -41,7 +41,7 @@ func DecodeHandshakePacket(packet Packet) (HandshakePacket, error) {
 		return handshakePacket, err
 	}
 
-	handshakePacket.ServerPort, err = ReadNumeric[uint16](packet.Data)
+	handshakePacket.ServerPort, err = ReadBigEndian[uint16](packet.Data)
 	if err != nil {
 		return handshakePacket, err
 	}
@@ -106,7 +106,7 @@ func DecodePingPacket(packet Packet) (PingPacket, error) {
 	var err error
 	pingPacket := PingPacket{}
 
-	pingPacket.Payload, err = ReadNumeric[uint64](packet.Data)
+	pingPacket.Payload, err = ReadBigEndian[uint64](packet.Data)
 	if err != nil {
 		return pingPacket, err
 	}
@@ -117,7 +117,7 @@ func DecodePingPacket(packet Packet) (PingPacket, error) {
 func EncodePingPacket(pingPacket PingPacket) (Packet, error) {
 	packet := createPacket(0x01)
 
-	err := WriteNumeric[uint64](packet.Data, pingPacket.Payload)
+	err := WriteBigEndian[uint64](packet.Data, pingPacket.Payload)
 	if err != nil {
 		return Packet{}, err
 	}

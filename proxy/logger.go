@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func logPacketReadError(conn mc.Conn, err error) {
+func logPacketReadError(conn *mc.Conn, err error) {
 	if err == nil || err == io.EOF {
 		return
 	}

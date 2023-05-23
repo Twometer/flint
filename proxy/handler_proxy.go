@@ -1,44 +1,11 @@
 package proxy
 
 import (
-	"flint/config"
 	"flint/mc"
 	"fmt"
-	"log"
 )
 
-type Handler struct {
-	config config.Config
-}
-
-func NewHandler(config config.Config) Handler {
-	return Handler{
-		config: config,
-	}
-}
-
-func (handler *Handler) UpdateConfig(config config.Config) {
-	handler.config = config
-}
-
-func (handler *Handler) HandleConn(conn mc.Conn) {
-	defer conn.Close()
-	for {
-		packet, err := conn.ReadPacket()
-		if err != nil {
-			logPacketReadError(conn, err)
-			return
-		}
-
-		err = handler.handlePacket(&conn, packet)
-		if err != nil {
-			log.Printf("error: failed to handle packet: %v\n", err)
-			return
-		}
-	}
-}
-
-func (handler *Handler) handlePacket(conn *mc.Conn, packet mc.Packet) error {
+func (server *Server) handlePacket(conn *mc.Conn, packet mc.Packet) error {
 	//log.Printf("Received packet %d with len %d\n", packet.Id, packet.Data.Len())
 
 	if conn.State == mc.StateInitial && packet.Id == 0x00 { // handshake
@@ -67,7 +34,7 @@ func (handler *Handler) handlePacket(conn *mc.Conn, packet mc.Packet) error {
 				},
 			},
 			Description: mc.ChatComponent{
-				Text: handler.config.Messages.ServerNotFound,
+				Text: server.config.Messages.ServerNotFound,
 			},
 		})
 		if err != nil {
@@ -95,7 +62,7 @@ func (handler *Handler) handlePacket(conn *mc.Conn, packet mc.Packet) error {
 		}
 	} else if conn.State == mc.StateLogin && packet.Id == 0x00 {
 		disconnectPacket, err := mc.EncodeDisconnectPacket(mc.DisconnectPacket{
-			Reason: mc.ChatComponent{Text: handler.config.Messages.ServerNotFound},
+			Reason: mc.ChatComponent{Text: server.config.Messages.ServerNotFound},
 		})
 		if err != nil {
 			return err

@@ -30,19 +30,19 @@ func NewConn(netConn net.Conn) Conn {
 	}
 }
 
-func (conn Conn) RemoteAddr() net.Addr {
+func (conn *Conn) RemoteAddr() net.Addr {
 	return conn.netConn.RemoteAddr()
 }
 
-func (conn Conn) LocalPort() uint16 {
+func (conn *Conn) LocalPort() uint16 {
 	return uint16(conn.netConn.LocalAddr().(*net.TCPAddr).Port)
 }
 
-func (conn Conn) Close() {
+func (conn *Conn) Close() {
 	_ = conn.netConn.Close()
 }
 
-func (conn Conn) ReadByte() (uint8, error) {
+func (conn *Conn) ReadByte() (uint8, error) {
 	err := conn.ReadData(conn.byteBuf)
 	if err != nil {
 		return 0, err
@@ -51,11 +51,11 @@ func (conn Conn) ReadByte() (uint8, error) {
 	return conn.byteBuf[0], nil
 }
 
-func (conn Conn) WriteByte(data uint8) error {
+func (conn *Conn) WriteByte(data uint8) error {
 	return conn.WriteData([]byte{data})
 }
 
-func (conn Conn) WriteData(buffer []byte) error {
+func (conn *Conn) WriteData(buffer []byte) error {
 	if len(buffer) == 0 {
 		return nil
 	}
@@ -77,7 +77,7 @@ func (conn Conn) WriteData(buffer []byte) error {
 	return nil
 }
 
-func (conn Conn) ReadData(buffer []byte) error {
+func (conn *Conn) ReadData(buffer []byte) error {
 	if len(buffer) == 0 {
 		return nil
 	}
@@ -99,7 +99,7 @@ func (conn Conn) ReadData(buffer []byte) error {
 	return nil
 }
 
-func (conn Conn) ReadPacket() (Packet, error) {
+func (conn *Conn) ReadPacket() (Packet, error) {
 	packetSize, err := ReadVarInt(conn)
 	if err != nil {
 		return Packet{}, err
@@ -124,7 +124,7 @@ func (conn Conn) ReadPacket() (Packet, error) {
 	return wrapPacket(packetId, packetBuffer), nil
 }
 
-func (conn Conn) WritePacket(packet Packet) error {
+func (conn *Conn) WritePacket(packet Packet) error {
 	packetData := packet.Data.Bytes()
 	packetLen := int32(len(packetData) + GetVarIntSize(packet.Id))
 

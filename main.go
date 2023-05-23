@@ -20,8 +20,8 @@ func main() {
 		log.Fatalln("fatal: failed to start server:", err)
 	}
 
-	proxyHandler := proxy.NewHandler(configWatcher.CurrentConfig)
-	configWatcher.OnConfigChanged = proxyHandler.UpdateConfig
+	proxyServer := proxy.NewServer(configWatcher.CurrentConfig)
+	configWatcher.OnConfigChanged = proxyServer.UpdateConfig
 
 	log.Printf("Listening on %s\n", server.Addr().String())
 	for {
@@ -30,6 +30,6 @@ func main() {
 			log.Fatalln("fatal: failed to accept connection:", err)
 		}
 
-		go proxyHandler.HandleConn(conn)
+		go proxyServer.HandleConn(&conn)
 	}
 }

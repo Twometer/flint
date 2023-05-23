@@ -14,7 +14,18 @@ type MessageCollection struct {
 }
 
 type Upstream struct {
-	Name    string `toml:"name"`
-	Host    string `toml:"host"`
-	Address string `toml:"address"`
+	Name        string `toml:"name"`
+	Host        string `toml:"host"`
+	Address     string `toml:"address"`
+	Maintenance bool   `toml:"maintenance"`
+}
+
+func (config Config) findUpstream(hostname string) (Upstream, bool) {
+	for _, upstream := range config.Upstreams {
+		if upstream.Host == hostname {
+			return upstream, true
+		}
+	}
+
+	return Upstream{}, false
 }

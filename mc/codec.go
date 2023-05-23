@@ -99,7 +99,7 @@ func WriteString(writer *bytes.Buffer, value string) error {
 	return nil
 }
 
-func ReadNumeric[T any](reader *bytes.Buffer) (T, error) {
+func ReadBigEndian[T any](reader *bytes.Buffer) (T, error) {
 	var data T
 	err := binary.Read(reader, binary.BigEndian, &data)
 	if err != nil {
@@ -108,6 +108,6 @@ func ReadNumeric[T any](reader *bytes.Buffer) (T, error) {
 	return data, nil
 }
 
-func WriteNumeric[T any](writer io.Writer, value T) error {
+func WriteBigEndian[T any](writer io.Writer, value T) error {
 	return binary.Write(writer, binary.BigEndian, value)
 }
