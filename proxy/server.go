@@ -4,7 +4,6 @@ import (
 	"flint/config"
 	"flint/mc"
 	"fmt"
-	"log"
 )
 
 type Server struct {
@@ -30,14 +29,13 @@ func (server *Server) HandleConn(conn *mc.Conn) {
 		return
 	}
 
-	log.Printf("client handshaking with %s\n", handshake.ServerAddress)
+	createConnectionHandler(handshake).handle(conn)
+}
 
-	/*err = server.handlePacket(conn, packet)
-	if err != nil {
-		log.Printf("error: failed to handle packet: %v\n", err)
-		return
-	}*/
-
+func createConnectionHandler(handshake mc.HandshakePacket) connectionHandler {
+	// TODO: do actual handler
+	message := fmt.Sprintf("§4No Minecraft server at §6%s", handshake.ServerAddress)
+	return &statusConnectionHandler{message: message, state: handshake.NextState}
 }
 
 // tries to receive a valid handshake packet from the connection

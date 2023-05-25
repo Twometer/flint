@@ -10,21 +10,13 @@ import (
 const maxPacketSize = 1024
 const timeoutSeconds = 30
 
-const (
-	StateInitial = iota
-	StateStatus
-	StateLogin
-)
-
 type Conn struct {
-	State   int32
 	byteBuf []byte
 	netConn net.Conn
 }
 
 func NewConn(netConn net.Conn) Conn {
 	return Conn{
-		State:   StateInitial,
 		byteBuf: make([]byte, 1),
 		netConn: netConn,
 	}

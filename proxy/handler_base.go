@@ -1,5 +1,7 @@
 package proxy
 
-type handler interface {
-	run()
+import "flint/mc"
+
+type connectionHandler interface {
+	handle(conn *mc.Conn)
 }
