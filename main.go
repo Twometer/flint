@@ -24,7 +24,7 @@ func main() {
 	proxyServer.UpdateConfig(configWatcher.CurrentConfig)
 	configWatcher.OnConfigChanged = proxyServer.UpdateConfig
 
-	log.Printf("Listening on %s\n", server.Addr().String())
+	log.Printf("info: Listening on %s\n", server.Addr().String())
 	for {
 		conn, err := server.Accept()
 		if err != nil {

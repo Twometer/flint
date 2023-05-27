@@ -5,6 +5,14 @@ import (
 	"regexp"
 )
 
+var messageRegex = (func() *regexp.Regexp {
+	regex, err := regexp.Compile("(%[nah])")
+	if err != nil {
+		log.Fatalln("fatal: error compiling message regex:", err)
+	}
+	return regex
+})()
+
 type interpolationParams struct {
 	serverName    string
 	serverAddress string
@@ -12,11 +20,7 @@ type interpolationParams struct {
 }
 
 func interpolateMessage(message string, params interpolationParams) string {
-	regex, err := regexp.Compile("(%[nah])")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return regex.ReplaceAllStringFunc(message, func(val string) string {
+	return messageRegex.ReplaceAllStringFunc(message, func(val string) string {
 		switch val {
 		case "%n":
 			return params.serverName

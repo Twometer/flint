@@ -59,7 +59,7 @@ func (watcher *Watcher) processEvents() {
 			if !ok {
 				return
 			}
-			log.Printf("config watcher error: %v\n", err)
+			log.Printf("error: config watcher: %v\n", err)
 
 		case <-eventTimer.C:
 			if !pendingEvent {
@@ -81,7 +81,7 @@ func (watcher *Watcher) handleConfigChanged() {
 	if watcher.OnConfigChanged != nil {
 		watcher.OnConfigChanged(watcher.CurrentConfig)
 	}
-	log.Println("Applying changed configuration")
+	log.Println("info: Applying changed configuration")
 }
 
 func (watcher *Watcher) reloadConfig() error {

@@ -11,5 +11,5 @@ func logPacketReadError(conn *mc.Conn, err error) {
 		return
 	}
 
-	log.Printf("failed to read packet from %s: %v\n", conn.RemoteAddr().String(), err)
+	log.Printf("error: failed to read packet from %s: %v\n", conn.RemoteAddr().String(), err)
 }
