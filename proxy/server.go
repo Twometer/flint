@@ -35,19 +35,25 @@ func (server *Server) HandleConn(conn *mc.Conn) {
 
 func (server *Server) createConnectionHandler(handshake mc.HandshakePacket) connectionHandler {
 	upstream, found := server.upstreams.findUpstream(handshake.ServerAddress)
+	msgParams := interpolationParams{
+		connectHost: handshake.ServerAddress,
+	}
 
 	if !found {
-		message := fmt.Sprintf(server.config.Messages.ServerNotFound, handshake.ServerAddress)
+		message := interpolateMessage(server.config.Messages.ServerNotFound, msgParams)
 		return newStatusHandler(message, false, handshake)
 	}
 
+	msgParams.serverAddress = upstream.config.Address
+	msgParams.serverName = upstream.config.Name
+
 	if upstream.config.Maintenance {
-		message := fmt.Sprintf(server.config.Messages.Maintenance, upstream.config.Name)
+		message := interpolateMessage(server.config.Messages.Maintenance, msgParams)
 		return newStatusHandler(message, true, handshake)
 	}
 
 	if !upstream.status.Online {
-		message := fmt.Sprintf(server.config.Messages.ServerDown, upstream.config.Name)
+		message := interpolateMessage(server.config.Messages.ServerDown, msgParams)
 		return newStatusHandler(message, false, handshake)
 	}
 
