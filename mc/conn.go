@@ -12,26 +12,34 @@ const timeoutSeconds = 30
 
 type Conn struct {
 	byteBuf []byte
-	netConn net.Conn
+	NetConn net.Conn
+}
+
+func Dial(address string) (Conn, error) {
+	netConn, err := net.Dial("tcp", address)
+	if err != nil {
+		return Conn{}, err
+	}
+	return NewConn(netConn), nil
 }
 
 func NewConn(netConn net.Conn) Conn {
 	return Conn{
 		byteBuf: make([]byte, 1),
-		netConn: netConn,
+		NetConn: netConn,
 	}
 }
 
 func (conn *Conn) RemoteAddr() net.Addr {
-	return conn.netConn.RemoteAddr()
+	return conn.NetConn.RemoteAddr()
 }
 
 func (conn *Conn) LocalPort() uint16 {
-	return uint16(conn.netConn.LocalAddr().(*net.TCPAddr).Port)
+	return uint16(conn.NetConn.LocalAddr().(*net.TCPAddr).Port)
 }
 
 func (conn *Conn) Close() {
-	_ = conn.netConn.Close()
+	_ = conn.NetConn.Close()
 }
 
 func (conn *Conn) ReadByte() (uint8, error) {
@@ -52,14 +60,14 @@ func (conn *Conn) WriteData(buffer []byte) error {
 		return nil
 	}
 
-	err := conn.netConn.SetWriteDeadline(time.Now().Add(timeoutSeconds * time.Second))
+	err := conn.NetConn.SetWriteDeadline(time.Now().Add(timeoutSeconds * time.Second))
 	if err != nil {
 		return err
 	}
 
 	written := 0
 	for written < len(buffer) {
-		n, err := conn.netConn.Write(buffer[written:])
+		n, err := conn.NetConn.Write(buffer[written:])
 		if err != nil {
 			return err
 		}
@@ -74,14 +82,14 @@ func (conn *Conn) ReadData(buffer []byte) error {
 		return nil
 	}
 
-	err := conn.netConn.SetReadDeadline(time.Now().Add(timeoutSeconds * time.Second))
+	err := conn.NetConn.SetReadDeadline(time.Now().Add(timeoutSeconds * time.Second))
 	if err != nil {
 		return err
 	}
 
 	read := 0
 	for read < len(buffer) {
-		n, err := conn.netConn.Read(buffer[read:])
+		n, err := conn.NetConn.Read(buffer[read:])
 		if err != nil {
 			return err
 		}
@@ -136,4 +144,8 @@ func (conn *Conn) WritePacket(packet Packet) error {
 	}
 
 	return nil
+}
+
+func (conn *Conn) DisableDeadlines() {
+	_ = conn.NetConn.SetDeadline(time.Time{})
 }

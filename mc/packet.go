@@ -54,6 +54,32 @@ func DecodeHandshakePacket(packet Packet) (HandshakePacket, error) {
 	return handshakePacket, nil
 }
 
+func EncodeHandshakePacket(handshake HandshakePacket) (Packet, error) {
+	packet := createPacket(0x00)
+
+	err := WriteVarInt(packet.Data, handshake.ProtocolVersion)
+	if err != nil {
+		return Packet{}, err
+	}
+
+	err = WriteString(packet.Data, handshake.ServerAddress)
+	if err != nil {
+		return Packet{}, err
+	}
+
+	err = WriteBigEndian[uint16](packet.Data, handshake.ServerPort)
+	if err != nil {
+		return Packet{}, err
+	}
+
+	err = WriteVarInt(packet.Data, handshake.NextState)
+	if err != nil {
+		return Packet{}, err
+	}
+
+	return packet, nil
+}
+
 type StatusVersion struct {
 	Name     string `json:"name"`
 	Protocol int    `json:"protocol"`

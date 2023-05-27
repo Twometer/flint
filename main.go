@@ -20,7 +20,8 @@ func main() {
 		log.Fatalln("fatal: failed to start server:", err)
 	}
 
-	proxyServer := proxy.NewServer(configWatcher.CurrentConfig)
+	proxyServer := proxy.NewServer()
+	proxyServer.UpdateConfig(configWatcher.CurrentConfig)
 	configWatcher.OnConfigChanged = proxyServer.UpdateConfig
 
 	log.Printf("Listening on %s\n", server.Addr().String())

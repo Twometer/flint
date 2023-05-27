@@ -17,8 +17,19 @@ const (
 )
 
 type statusConnectionHandler struct {
-	message string
-	state   int32
+	message    string
+	handshake  mc.HandshakePacket
+	state      int32
+	enablePing bool
+}
+
+func newStatusHandler(message string, ping bool, handshake mc.HandshakePacket) *statusConnectionHandler {
+	return &statusConnectionHandler{
+		message:    message,
+		handshake:  handshake,
+		state:      handshake.NextState,
+		enablePing: ping,
+	}
 }
 
 func (s *statusConnectionHandler) handle(conn *mc.Conn) {
@@ -42,8 +53,8 @@ func (s *statusConnectionHandler) handleStatusPacket(conn *mc.Conn, packet mc.Pa
 	case packetStatusRequest:
 		responsePacket, err := mc.EncodeStatusResponsePacket(mc.StatusResponsePacket{
 			Version: mc.StatusVersion{
-				Name:     "1.7.10",
-				Protocol: 5,
+				Name:     "flint",
+				Protocol: int(s.handshake.ProtocolVersion),
 			},
 			Players: mc.StatusPlayers{
 				Max:    0,
@@ -55,6 +66,8 @@ func (s *statusConnectionHandler) handleStatusPacket(conn *mc.Conn, packet mc.Pa
 			Description: mc.ChatComponent{
 				Text: s.message,
 			},
+			Favicon:            "",
+			EnforcesSecureChat: false,
 		})
 		if err != nil {
 			return err
@@ -63,6 +76,10 @@ func (s *statusConnectionHandler) handleStatusPacket(conn *mc.Conn, packet mc.Pa
 		return conn.WritePacket(responsePacket)
 
 	case packetStatusPing:
+		if !s.enablePing {
+			return nil
+		}
+
 		pingPacket, err := mc.DecodePingPacket(packet)
 		if err != nil {
 			return err

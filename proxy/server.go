@@ -7,35 +7,51 @@ import (
 )
 
 type Server struct {
-	config config.Config
+	config    config.Config
+	upstreams *upstreamTracker
 }
 
-func NewServer(config config.Config) Server {
+func NewServer() Server {
 	return Server{
-		config: config,
+		upstreams: newUpstreamTracker(),
 	}
 }
 
 func (server *Server) UpdateConfig(config config.Config) {
 	server.config = config
+	server.upstreams.setUpstreams(config.Upstreams)
 }
 
 func (server *Server) HandleConn(conn *mc.Conn) {
 	defer conn.Close()
-
 	handshake, err := receiveHandshake(conn)
 	if err != nil {
 		logPacketReadError(conn, err)
 		return
 	}
 
-	createConnectionHandler(handshake).handle(conn)
+	server.createConnectionHandler(handshake).handle(conn)
 }
 
-func createConnectionHandler(handshake mc.HandshakePacket) connectionHandler {
-	// TODO: do actual handler
-	message := fmt.Sprintf("§4No Minecraft server at §6%s", handshake.ServerAddress)
-	return &statusConnectionHandler{message: message, state: handshake.NextState}
+func (server *Server) createConnectionHandler(handshake mc.HandshakePacket) connectionHandler {
+	upstream, found := server.upstreams.findUpstream(handshake.ServerAddress)
+
+	if !found {
+		message := fmt.Sprintf(server.config.Messages.ServerNotFound, handshake.ServerAddress)
+		return newStatusHandler(message, false, handshake)
+	}
+
+	if upstream.config.Maintenance {
+		message := fmt.Sprintf(server.config.Messages.Maintenance, upstream.config.Name)
+		return newStatusHandler(message, true, handshake)
+	}
+
+	if !upstream.status.Online {
+		message := fmt.Sprintf(server.config.Messages.ServerDown, upstream.config.Name)
+		return newStatusHandler(message, false, handshake)
+	}
+
+	return newProxyHandler(upstream.config.Address, handshake)
 }
 
 // tries to receive a valid handshake packet from the connection
