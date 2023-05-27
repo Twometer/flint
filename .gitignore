@@ -23,4 +23,4 @@ go.work
 # GoLand
 .idea/
 
-*.toml
+config.toml

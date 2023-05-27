@@ -1,0 +1,13 @@
+# IP and port the flint server should bind to
+ip = "127.0.0.1"
+port = 25565
+
+[messages]
+server_not_found = "§4No Minecraft server running at §c%s" # %s replaced with server address
+server_down = "§c%s§4 is currently offline" # %s replaced with server name
+maintenance = "§c%s§4 is in maintenance mode" # %s replaced with server name
+
+[[upstream]]
+name = "Example Server"         # Server name
+host = "localhost"              # The server that the client should connect to
+address = "example.com:25565"   # Address of the upstream server
