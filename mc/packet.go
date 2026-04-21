@@ -2,6 +2,7 @@ package mc
 
 import (
 	"bytes"
+	"strings"
 )
 
 type Packet struct {
@@ -25,6 +26,13 @@ type HandshakePacket struct {
 	ServerAddress   string
 	ServerPort      uint16
 	NextState       int32
+}
+
+func (packet *HandshakePacket) ServerAddressClean() string {
+	if i := strings.IndexByte(packet.ServerAddress, 0x00); i != -1 {
+		return packet.ServerAddress[:i]
+	}
+	return packet.ServerAddress
 }
 
 func DecodeHandshakePacket(packet Packet) (HandshakePacket, error) {

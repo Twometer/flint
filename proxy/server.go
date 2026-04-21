@@ -34,9 +34,9 @@ func (server *Server) HandleConn(conn *mc.Conn) {
 }
 
 func (server *Server) createConnectionHandler(handshake mc.HandshakePacket) connectionHandler {
-	upstream, found := server.upstreams.findUpstream(handshake.ServerAddress)
+	upstream, found := server.upstreams.findUpstream(handshake.ServerAddressClean())
 	msgParams := interpolationParams{
-		connectHost: handshake.ServerAddress,
+		connectHost: handshake.ServerAddressClean(),
 	}
 
 	if !found {
